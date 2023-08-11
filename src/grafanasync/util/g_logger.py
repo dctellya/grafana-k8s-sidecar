@@ -1,14 +1,12 @@
+#!/usr/bin/env python
 import logging
 import os
 import sys
 import yaml
-from datetime import datetime
-from typing import Optional
-
 from dateutil.tz import tzlocal, tzutc
-from logfmter import Logfmter
-from pythonjsonlogger import jsonlogger
+
 from logging import config
+from grafanasync.formatters import JsonFormatter,LogfmtFormatter
 
 # Supported Timezones for time format (in ISO 8601)
 LogTimezones = {
@@ -21,39 +19,7 @@ level = os.getenv("LOG_LEVEL", logging.INFO)
 fmt = os.getenv("LOG_FORMAT", 'JSON')
 tz = os.getenv("LOG_TZ", 'LOCAL')
 log_conf_file = os.getenv("LOG_CONFIG","")
-
 log_tz = LogTimezones[tz.upper()] if LogTimezones.get(tz.upper()) else LogTimezones['LOCAL']
-
-
-class Iso8601Formatter:
-    """
-    A formatter mixin which always forces dates to be rendered in iso format.
-    Using `datefmt` parameter of logging.Formatter is insufficient because of missing fractional seconds.
-    """
-
-    def formatTime(self, record, datefmt: Optional[str] = ...):
-        """
-        Meant to override logging.Formatter.formatTime
-        """
-        return datetime.fromtimestamp(record.created, log_tz).isoformat()
-
-
-class LogfmtFormatter(Iso8601Formatter, Logfmter):
-    """
-    A formatter combining logfmt style with iso dates
-    """
-    pass
-
-
-class JsonFormatter(Iso8601Formatter, jsonlogger.JsonFormatter):
-    """
-    A formatter combining json logs with iso dates
-    """
-
-    def add_fields(self, log_record, record, message_dict):
-        log_record['time'] = self.formatTime(record)
-        super(JsonFormatter, self).add_fields(log_record, record, message_dict)
-
 
 # Supported Log Formatters
 LogFormatters = {
@@ -84,7 +50,7 @@ default_log_config = {
     },
     "formatters": {
         "JSON": {
-            "()": "logger.JsonFormatter",
+            "()": "grafanasync.formatters.JsonFormatter",
             "format": "%(levelname)s %(message)s",
             "rename_fields": {
                 "message": "msg",
@@ -92,7 +58,7 @@ default_log_config = {
             }
         },
         "LOGFMT": {
-            "()": "logger.LogfmtFormatter",
+            "()": "grafanasync.formatters.LogfmtFormatter",
             "keys": [
                 "time",
                 "level",

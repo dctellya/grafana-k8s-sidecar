@@ -8,9 +8,11 @@ mkdir -p dist
 cp -R src/. dist
 cd dist
 ls -pal
-python3 -m venv .venv && .venv/bin/pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org --no-cache-dir -U pip setuptools 
+python3 -m venv .venv && .venv/bin/pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org --no-cache-dir -U pip setuptools pyyaml
 .venv/bin/pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org --no-cache-dir -r requirements.txt
+python3 -m pip install -e .
 rm requirements.txt
 find $(pwd)/.venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
+
 cd ..
 
